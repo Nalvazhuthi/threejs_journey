@@ -19,6 +19,10 @@ const parameters = {
   count: 10000, // particles count
   particleSize: 0.01, // particles size
 };
+parameters.radius = 3;
+parameters.branch = 3;
+parameters.spin = 3;
+parameters.randomness = 0.2;
 
 gui
   .add(parameters, "count")
@@ -32,6 +36,32 @@ gui
   .max(1)
   .step(0.0001)
   .onFinishChange(() => generateGalaxy());
+
+gui
+  .add(parameters, "radius")
+  .min(1)
+  .max(20)
+  .step(1)
+  .onFinishChange(() => generateGalaxy());
+
+gui
+  .add(parameters, "branch")
+  .min(2)
+  .max(20)
+  .step(1)
+  .onFinishChange(() => generateGalaxy());
+gui
+  .add(parameters, "spin")
+  .min(-5)
+  .max(5)
+  .step(1)
+  .onFinishChange(() => generateGalaxy());
+gui
+  .add(parameters, "randomness")
+  .min(1)
+  .max(1)
+  .step(0.01)
+  .onFinishChange(() => generateGalaxy());
 /**
  * Objects
  */
@@ -39,6 +69,7 @@ gui
 let particleGeometry = null;
 let particleMaterial = null;
 let particle = null;
+
 // generate galaxy
 const generateGalaxy = () => {
   if (particle !== null) {
@@ -50,9 +81,18 @@ const generateGalaxy = () => {
   const position = new Float32Array(parameters.count * 3);
   for (let i = 0; i <= parameters.count; i++) {
     const i3 = i * 3;
-    position[i3] = Math.random() - 0.5; // x
-    position[i3 + 1] = Math.random() - 0.5; // y
-    position[i3 + 2] = Math.random() - 0.5; // z
+    const radius = Math.random() * parameters.radius;
+    const spinAngle = radius * parameters.spin;
+    const branchAngle =
+      ((i % parameters.branch) / parameters.branch) * Math.PI * 2;
+
+    const randomX = (Math.random() - 0.5) * parameters.randomness;
+    const randomY = (Math.random() - 0.5) * parameters.randomness;
+    const randomZ = (Math.random() - 0.5) * parameters.randomness;
+
+    position[i3] = Math.cos(branchAngle + spinAngle) * radius + randomX; // x
+    position[i3 + 1] = randomY; // y
+    position[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ; // z
   }
   particleMaterial = new THREE.PointsMaterial({
     size: parameters.particleSize,
