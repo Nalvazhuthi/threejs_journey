@@ -13,7 +13,8 @@ const canvas = document.querySelector("canvas.webgl");
 
 // textureLoader
 const textureLoader = new THREE.TextureLoader();
-const texture = textureLoader.load("/textures/particles/2.png");
+const texture = textureLoader.load("/textures/particles/3.png");
+
 // Scene
 const scene = new THREE.Scene();
 
