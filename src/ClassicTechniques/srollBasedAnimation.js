@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import GUI from "lil-gui";
+import gsap from "gsap";
 
 /**
  * Base
@@ -70,6 +71,32 @@ object1.position.y = -objectsDistance * 0;
 object2.position.y = -objectsDistance * 1;
 object3.position.y = -objectsDistance * 2;
 
+const objects = [object1, object2, object3];
+
+// particles
+const count = 10000;
+const position = new Float32Array(count * 3);
+
+for (let i = 0; i <= count; i++) {
+  const i3 = i * 3;
+  position[i3] = (Math.random() - 0.5) * 10;
+  position[i3 + 1] =
+    objectsDistance * 0.5 - Math.random() * objectsDistance * objects.length;
+  position[i3 + 2] = (Math.random() - 0.5) * 10;
+}
+
+const particleGeometry = new THREE.BufferGeometry();
+particleGeometry.setAttribute(
+  "position",
+  new THREE.BufferAttribute(position, 3)
+);
+const particleMaterial = new THREE.PointsMaterial({
+  size: 0.01,
+  sizeAttenuation: false,
+});
+const particles = new THREE.Points(particleGeometry, particleMaterial);
+scene.add(particles);
+
 /**
  * Sizes
  */
@@ -78,11 +105,19 @@ const sizes = {
   height: window.innerHeight,
 };
 
+const curser = {
+  x: 0,
+  y: 0,
+};
+window.addEventListener("mousemove", (e) => {
+  curser.x = e.screenX / sizes.width - 0.5; // values (-0.5 to 0.5)
+  curser.y = e.screenY / sizes.height - 0.5; // values (-0.5 to 0.5)
+});
+
 window.addEventListener("resize", () => {
   // Update sizes
   sizes.width = window.innerWidth;
   sizes.height = window.innerHeight;
-
   // Update camera
   camera.aspect = sizes.width / sizes.height;
   camera.updateProjectionMatrix();
@@ -91,6 +126,10 @@ window.addEventListener("resize", () => {
   renderer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
+
+// group
+const cameraGroup = new THREE.Group();
+scene.add(cameraGroup);
 
 /**
  * Camera
@@ -104,7 +143,7 @@ const camera = new THREE.PerspectiveCamera(
 );
 
 camera.position.z = 2;
-scene.add(camera);
+cameraGroup.add(camera);
 
 /**
  * Renderer
@@ -117,23 +156,46 @@ renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 let scrollY = window.scrollY;
+
 window.addEventListener("scroll", () => {
   scrollY = window.scrollY / sizes.height;
-  console.log(scrollY);
 });
+
+let currentSection = 0;
+window.addEventListener("scroll", () => {
+  const newSection = Math.round(window.scrollY / sizes.height);
+  if (currentSection != newSection) {
+    currentSection = newSection;
+    const mesh = objects[currentSection];
+    gsap.to(mesh.rotation, {
+      duration: 1.5,
+      ease: "power2.inOut",
+      x: "+=6",
+      y: "+=5",
+    });
+  }
+});
+
 /**
  * Animate
  */
 const clock = new THREE.Clock();
-
-const objects = [object1, object2, object3];
+let previousTime = 0;
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+  const deltaTime = elapsedTime - previousTime;
+  previousTime = elapsedTime;
   camera.position.y = -scrollY * objectsDistance;
+
+  cameraGroup.position.x +=
+    (curser.x - cameraGroup.position.x) * 10 * deltaTime;
+  cameraGroup.position.y +=
+    (-curser.y - cameraGroup.position.y) * 10 * deltaTime;
+
   // Render
   for (let mesh of objects) {
-    mesh.rotation.x = elapsedTime * 0.1;
-    mesh.rotation.y = elapsedTime * 0.01;
+    mesh.rotation.x += deltaTime;
+    mesh.rotation.y += deltaTime;
   }
 
   renderer.render(scene, camera);
