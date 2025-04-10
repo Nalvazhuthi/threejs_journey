@@ -1,8 +1,11 @@
 * {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
-
+html {
+    background-color: black;
+}
 .webgl {
     position: fixed;
     top: 0;
@@ -10,7 +13,30 @@
     outline: none;
 }
 
-html,
-body {
-    overflow: hidden;
+/* The wrapper that takes up the full screen */
+.content-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* Ensure it is in front of the background section */
+}
+
+/* The section that takes up the full viewport */
+section {
+    padding: 1rem 5rem;
+    width: 100%;
+    height: 100vh; /* Full viewport height */
+    background-color: transparent; /* No background color */
+    position: relative; /* Ensures it is positioned in the normal document flow */
+    z-index: 2; /* Behind content-wrapper */
+    color: #fff; /* Text color */
+    display: flex; /* Flexbox for centering content */
+    font-size: 2rem; /* Font size for text */
+    align-items: center; /* Center vertically */
+}
+section:nth-child(even) {
+    display: flex;
+    justify-content: end; /* Center horizontally */
 }
